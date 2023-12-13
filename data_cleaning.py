@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import statsmodels.api as sm
-from scipy.stats import shapiro
+import scipy.stats as stat
 import statsmodels #import qqplot
 import seaborn as sns
 
@@ -12,38 +12,27 @@ class DataFrameInfo():
     #M3, T2 class to extract info from dataset
     def __init__(self, table):
         self.table = table 
-        all_columns = self.table.columns.values.tolist()
-        all_numeric_columns = self.table.select_dtypes(include=np.number)
-        numeric_non_bool_columns = [x for x in self.table.select_dtypes(include=np.number) if x not in ['Machine failure', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF']]
-        
+   
     def df_overview(self):
-        #Shape of dataframe
+        #Shape of dataframe- haven't actually used but might want to in future
         print('Row count:', self.table.shape[0], '\tColumn count:', self.table.shape[1])
-        print()
-        #Describe all columns in the DataFrame to check their data types
-        # print('Information about table: \n"')
-        # print(self.table.info(), '\n"')
         print()
         
     def distinct_values(self, *columns):
         columns = list(*columns)
         for column in columns:
             #display unique values
-            # print(column,'has', np.unique(self.table[column]), 'unique values.')
+            print(f'Column {column} has {np.unique(self.table[column])} unique values.')
             #count of unique values
             print(f'Column "{column}" has {len(np.unique(self.table[column]))} unique values.')
-        return len(np.unique(self.table[column]))
         print()
+        return len(np.unique(self.table[column]))
     
     def get_means(self, *columns):
-        columns = list(*columns)
-        nulls_to_impute = dict()
         print('Mean values are:')
         for column in columns:
-            nulls_to_impute[column]= self.table[column].mean(skipna=True)
             print(column, self.table[column].mean(skipna=True))
         print()
-        return nulls_to_impute
            
     def get_median(self, *columns):
         columns = list(*columns)
@@ -85,6 +74,7 @@ class Plotter():
         
     def graph_nulls(self, table):
         plt.plot(table.isna().sum(), 'o')
+        plt.title('Null value count')
         plt.show()
         
     def skewness(self, table):
@@ -152,7 +142,6 @@ class DataFrameTransformer():
         lower_bound = q1-(1.5*iqr)
         
         for index, row in self.table.iterrows():
-            #find outliers
             ##if outlier has a value outside of upper_bound and is a bigger number that the highest value in 75% of results and spread of % spread of data in Q1-Q3 drop it
             if row[column] <= lower_bound or row[column] >= upper_bound+iqr:
                 drop_rows.append(row[column])
