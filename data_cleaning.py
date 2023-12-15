@@ -236,7 +236,7 @@ class Plotter():
         Get count and percentage total of failed machining sessions. 
 
         Args:
-            column_name (str): _description_
+            column_name (str): column to be checked. 
         """
         by_1= self.table.groupby(column_name).count()
         by = by_1.iloc[:,0]
