@@ -1,14 +1,14 @@
-# import PyYAML
+
 from sqlalchemy import create_engine, inspect
-# import sqlalchemy
-import psycopg2
+# import psycopg2
 import yaml 
+
 
 class RDSDatabaseConnector():
     """
-    M2, T1- Methods to extract data from RDS database. 
+    Methods to connect to database. 
     """
-    #M2, T4 write init method take in a dict of credentials from T3
+
     def __init__(self, yaml_file):
         """
         See help(DatabaseConnector) for more detail. 
@@ -18,10 +18,9 @@ class RDSDatabaseConnector():
         """
         self.yaml_file = yaml_file
 
-    #M2, T3 loads credentials and returns data within it, should be passed to RDSDatabaseConnector as an argument
     def read_db_creds(self):
         """
-        Reads and returns sensitive database connection credentials, called in the init_db_engine and init_sql_connection methods. 
+        Reads and returns sensitive database connection credentials, called in the init_db_engine method. 
         Yaml files added to git ignore file.
 
         Returns: 
@@ -30,12 +29,11 @@ class RDSDatabaseConnector():
         with open(self.yaml_file, 'r') as file:
             self.db_credentials = yaml.safe_load(file)
             return self.db_credentials
-
-    #M2, T5 initialise SQLALchemy engine 
+ 
     def init_db_engine(self):
         """
         Read the credentials from the return of read_db_creds and initialise and return an sqlalchemy database engine to get data from 
-        Amazon database. 
+        database. 
 
         Returns:
             engine (engine): database connection to an Amazon database via a sqlalchemy engine. 
