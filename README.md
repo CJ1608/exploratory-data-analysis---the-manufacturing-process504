@@ -11,14 +11,14 @@ Made using Python 3.11.5 and VS Code 1.85.1
 - Check have all the needed modules and packages installed
 
 ## File structure of the project:
-.gitignore
-LICENSE.txt
-README.md
-data_cleaning.py
-data_extraction.py
-db_utils.py
-main.py- main file that calls on methods within data_cleaning.py, data_extraction.py and db_utils.py
-requirements.txt- packages and libraries to import
+- .gitignore
+- LICENSE.txt
+- README.md
+- data_cleaning.py
+- data_extraction.py
+- db_utils.py
+- main.py- main file that calls on methods within data_cleaning.py, data_extraction.py and db_utils.py
+- requirements.txt- packages and libraries to import
 
   
 ## License information
