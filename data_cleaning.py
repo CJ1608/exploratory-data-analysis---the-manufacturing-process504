@@ -6,6 +6,8 @@ import statsmodels.api as sm
 import scipy.stats as stat
 import statsmodels #import qqplot
 import seaborn as sns
+from tabulate import tabulate
+import researchpy as rp
 
     
 class DataFrameInfo():
@@ -65,6 +67,7 @@ class DataFrameInfo():
         print()
         return nulls
 
+
 class Plotter():
     def __init__(self, table):
         self.table = table
@@ -109,6 +112,148 @@ class Plotter():
         #visual correlation
         sns.heatmap(table)
         plt.show()
+        
+    def check_ranges(self, product_type): 
+        range_value_dict = dict()
+        product_list = ['H', 'L', 'M']
+        if product_type in product_list:
+            #filter by column type
+            df_new = self.table[self.table['Type'] == product_type]
+            #get columns mentioned they want only
+            df_columns_wanted = df_new.drop(columns=['UDI', 'Product ID', 'Type', 'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF'])
+            #go through every column and get range
+            for column in df_columns_wanted:
+                if column != 'Type':
+                    range_values = float(max((df_columns_wanted[column]))) - float(min((df_columns_wanted[column])))
+                    range_value_dict[column] = range_values
+            print(f'Values for: {product_type}...')
+            print(tabulate(range_value_dict.items(), headers=["Conditon", "Range"], tablefmt='grid'))
+            print()
+        else:
+            df_columns_wanted = self.table.drop(columns=['UDI', 'Product ID', 'Type', 'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF'])
+            #go through every column and get range
+            for column in df_columns_wanted:
+                 range_values = float(max((df_columns_wanted[column]))) - float(min((df_columns_wanted[column])))
+                 range_value_dict[column] = range_values
+            print(f'Values for all product types...')
+            print(tabulate(range_value_dict.items(), headers=["Conditon", "Range"], tablefmt='grid'))
+            print()
+            
+    def upper_tool_wear_limit(self, column_name):
+        by_tw = self.table.groupby(column_name).count()
+        ypoints = by_tw.iloc[:,0]
+        plt.plot(ypoints, linestyle='solid')
+        plt.title('Tool wear of machinery')
+        plt.xlabel('Tool wear [minutes]')
+        plt.ylabel('Count')
+        plt.show()
+        
+    def failure_rate(self, column_name):
+        #how many failures happened and what is percentage of failures vs non-failures (machine failure 1-0)
+        by_1= self.table.groupby(column_name).count()
+        by = by_1.iloc[:,0]
+        print(f'Count of failures is {by[1]} out of {by[0]} machining sessions. The percentage total of failures is: {(by[1]/by[0])*100:.2f}')
+        print()
+        
+    def failure_by_product_quality(self, column_name, column_name2):   #chi-square test? 
+        #see how failures relate to quality of product      
+        crosstab= pd.crosstab(self.table[column_name], self.table[column_name2])
+        # print(crosstab) #use this to make a graph
+        # print()
+        crosstab1, test_results, expected = rp.crosstab(self.table[column_name],self.table[column_name2], test='chi-square', expected_freqs=True, prop='cell')
+        print(crosstab1) #showing percentage of each result based on machine failure and type
+        print()
+        print('Results', test_results) #showing stats tests for it 
+        print()
+        print(expected)
+        print()
+        
+    def failure_cases(self):
+        #check machine failure count then check TWF-RNF columns for failure reason, find each 1 
+        failure_dict = dict()
+        print('Failure cases method.')
+        #get columns want
+        df_columns_wanted = self.table.drop(columns=['UDI', 'Product ID', 'Type', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]'])
+        df_columns_wanted.rename(columns={'Machine failure': 'Total machine failures'}, inplace=True)
+        #go through each column and get count of '1's and save column name then count as k:v pairs
+        for column in df_columns_wanted:
+            failure_dict[column] = df_columns_wanted[column].value_counts()[1]     
+        #plot results 
+        plt.bar(failure_dict.keys(), failure_dict.values())
+        plt.title('Machine failure reasons')
+        plt.xlabel('Failure reasons')
+        plt.ylabel('Count of occurances')
+        plt.show()
+        
+    def failure_reasons(self, product_type):
+        # for specified product type
+        df_wanted = self.table.loc[self.table['Type']== product_type]
+        df_wanted = df_wanted.drop(columns=['UDI', 'Product ID', 'Type'])
+        # print(df_wanted)
+        matrix = df_wanted.corr()
+        print(matrix)
+        corr_pairs = matrix.unstack()
+        sorted_pairs = corr_pairs.sort_values(kind='quicksort')
+        print()
+        positive_pairs = sorted_pairs[abs(sorted_pairs) > 0.5]
+        print(positive_pairs) #11
+    
+    def failure_corr(self, failure_type):
+        #pass in table and reduce it down to index, failure types and variables- https://www.w3schools.com/python/matplotlib_scatter.asp
+        columns_wanted = self.table.drop(columns=['UDI', 'Product ID', 'Type'])
+        variables_to_check = ['Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]'] #hdf process temp
+        y_axis_fail = list()
+        x_axis_fail = list()
+        y_axis_pass = list()
+        x_axis_pass = list()
+        ##for each variable
+        for element in variables_to_check:
+            # print(element)
+            ##for each row, if the value in self.table[failure_type] is 1, add the index to x-array and add value to y-array
+            for index, row in self.table.iterrows():
+                #if it failed
+                if row[failure_type] == 1:
+                    y_axis_fail.append(row[element])
+                    x_axis_fail.append(index)
+                    # print(element, index, row[element])
+                else:
+                    y_axis_pass.append(row[element])
+                    x_axis_pass.append(index)
+            #         # print(element, index, row[element])     
+            # print('Failed:', y_axis_fail, x_axis_fail)       
+            # print('Passed:', y_axis_pass, x_axis_pass) 
+            
+            plt.scatter(x_axis_pass, y_axis_pass, color='green', alpha=0.7)
+            plt.scatter(x_axis_fail, y_axis_fail, color='red')
+            plt.xlabel('Row number')
+            plt.ylabel(f'{element} values')
+            plt.title(f'{failure_type}: {element}')
+            plt.show()
+            # plt.savefig(f'{failure_type}_{element}.jpg')
+                    
+                    
+                    
+                       ###wait until x and y arrays full and add them to plt
+                # print(index, row)         
+                    
+        ##for each row, if the value in self.table[failure_type] is 0, add the index to x-array and add value to y-array
+            ###wait until x and y arrays full and then add them to plt
+        ##show plt
+        
+        
+        #plot numeric variables by if 0 one colour, and 1 another colour scatterplot
+        
+            # if self.table[failure_type] == 1:
+                
+        ##what is x and y variable values- x id one axis, y values the other axis
+        
+        
+        ##get list of values for 1s in specified column 
+        
+        ##get list of values for 0s in specified column 
+        
+        #graph for each data against each data type
+        
 
 class DataFrameTransformer():
     
