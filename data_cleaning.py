@@ -149,9 +149,9 @@ class Plotter():
                 if self.table[row].skew() > 0.5 or self.table[row].skew() < -0.5:
                     print(row, 'heavily skewed:', self.table[row].skew())
                     skewed.append(row)
-                else:
-                    print('Row not in:', row)
-            print()
+                # else:
+                #     print('Row not in:', row)
+            # print('skewed', skewed)
             return skewed
     
     def box_plots(self, table):
@@ -312,7 +312,7 @@ class Plotter():
                 else:
                     y_axis_pass.append(row[element])
                     x_axis_pass.append(index) 
-            plt.scatter(x_axis_pass, y_axis_pass, color='green', alpha=0.7, label='No failure')
+            plt.scatter(x_axis_pass, y_axis_pass, color='green', alpha=0.7, label=(f'No failure:count {len(y_axis_pass)}'))
             plt.scatter(x_axis_fail_H, y_axis_fail_H, color='red', label='High quality')
             plt.scatter(x_axis_fail_M, y_axis_fail_M, color='darkorange', label='Medium quality')
             plt.scatter(x_axis_fail_L, y_axis_fail_L, color='purple', label='Low quality')
