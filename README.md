@@ -17,7 +17,7 @@ Made using Python 3.11.5 and VS Code 1.85.1
 - data_cleaning.py
 - data_extraction.py
 - db_utils.py
-- main.py- main file that calls on methods within data_cleaning.py, data_extraction.py and db_utils.py
+- main_1.ipynb- main file that calls on methods within data_cleaning.py, data_extraction.py and db_utils.py
 - requirements.txt- packages and libraries to import
 
   
