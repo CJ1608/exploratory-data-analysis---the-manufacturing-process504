@@ -11,6 +11,7 @@ The data was extracted from an Amazon Web Service database which involved connec
 
 ### Clean Data
 Once the data was extracted, the columns were renamed and each column was converted to the correct data type. Basic information and descriptive statistics about the columns like the mean were calculated. The null values were removed and/or imputed using the median. Skewed data was transformed using log transform and outliers were removed. Any heavily correlated columns were dropped if appropriate. 
+
 Checking the skew of data...
 ![image](https://github.com/CJ1608/exploratory-data-analysis---the-manufacturing-process504/assets/128046995/180ef567-f088-4f83-969c-9d99e049c3f2)
 Checking for outliers...
